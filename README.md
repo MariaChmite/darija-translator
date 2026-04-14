@@ -324,9 +324,9 @@ Install Ollama: https://ollama.com — then `ollama pull aya`
 ---
 
 ## Gemini API Free Tier Limits
-- **Model**: `gemini-1.5-flash`
+- **Model**: `gemini-2.0-flash`
 - **Rate limit**: 15 requests/minute, 1,500 requests/day
 - **Cost**: Free (as of 2024)
-- **Upgrade**: Switch to `gemini-1.5-pro` for higher quality and limits
+- **Upgrade**: Switch to `gemini-2.0-pro` for higher quality and limits
 
 ---
