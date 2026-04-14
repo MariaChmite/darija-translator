@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Darija Translator</title>
+<style>
+  :root {
+    --bg: #f8f7f4;
+    --card: #ffffff;
+    --primary: #2d6a4f;
+    --primary-light: #40916c;
+    --accent: #d4a017;
+    --text: #1a1a1a;
+    --muted: #6b7280;
+    --border: #e5e7eb;
+    --danger: #dc2626;
+    --radius: 10px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 14px;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ── Header ── */
+  .header {
+    background: var(--primary);
+    color: white;
+    padding: 14px 16px 10px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-shrink: 0;
+  }
+  .header-logo { font-size: 22px; }
+  .header-title { font-size: 15px; font-weight: 600; }
+  .header-sub { font-size: 11px; opacity: 0.75; margin-top: 1px; }
+  .header-spacer { flex: 1; }
+  .settings-btn {
+    background: none; border: none; color: white;
+    cursor: pointer; font-size: 18px; padding: 4px;
+    border-radius: 6px; opacity: 0.8;
+  }
+  .settings-btn:hover { background: rgba(255,255,255,0.15); opacity: 1; }
+
+  /* ── Tabs ── */
+  .tabs {
+    display: flex;
+    background: white;
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+  .tab {
+    flex: 1; padding: 10px 4px;
+    text-align: center; font-size: 12px;
+    cursor: pointer; border: none; background: none;
+    color: var(--muted); border-bottom: 2px solid transparent;
+    transition: all 0.2s;
+  }
+  .tab.active { color: var(--primary); border-bottom-color: var(--primary); font-weight: 500; }
+  .tab-icon { font-size: 16px; display: block; margin-bottom: 2px; }
+
+  /* ── Main Content ── */
+  .content {
+    flex: 1; overflow-y: auto; padding: 12px;
+    display: flex; flex-direction: column; gap: 10px;
+  }
+  .panel { display: none; }
+  .panel.active { display: flex; flex-direction: column; gap: 10px; }
+
+  /* ── Source Area ── */
+  .source-bar {
+    display: flex; align-items: center; gap: 6px;
+    background: white; border-radius: var(--radius);
+    border: 1px solid var(--border); padding: 6px 10px;
+  }
+  .lang-select {
+    border: none; background: none; font-size: 12px;
+    color: var(--muted); cursor: pointer; outline: none;
+  }
+  .source-bar-spacer { flex: 1; }
+  .mic-btn {
+    background: none; border: none; cursor: pointer;
+    font-size: 16px; padding: 2px 4px; border-radius: 4px;
+    transition: background 0.2s;
+  }
+  .mic-btn:hover { background: var(--bg); }
+  .mic-btn.recording { color: var(--danger); animation: pulse 1s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.5} }
+
+  textarea {
+    width: 100%; border: 1px solid var(--border); border-radius: var(--radius);
+    background: white; padding: 10px 12px;
+    font-size: 14px; line-height: 1.5; resize: none;
+    outline: none; font-family: inherit; color: var(--text);
+    transition: border-color 0.2s;
+  }
+  textarea:focus { border-color: var(--primary-light); }
+  #source-text { min-height: 90px; }
+
+  .char-count { font-size: 11px; color: var(--muted); text-align: right; }
+
+  /* ── Translate Button ── */
+  .translate-btn {
+    background: var(--primary); color: white;
+    border: none; border-radius: var(--radius);
+    padding: 11px; font-size: 14px; font-weight: 500;
+    cursor: pointer; display: flex; align-items: center;
+    justify-content: center; gap: 6px; transition: background 0.2s;
+  }
+  .translate-btn:hover { background: var(--primary-light); }
+  .translate-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+  /* ── Result Card ── */
+  .result-card {
+    background: white; border-radius: var(--radius);
+    border: 1px solid var(--border); overflow: hidden;
+  }
+  .result-header {
+    background: #f0fdf4; border-bottom: 1px solid #d1fae5;
+    padding: 8px 12px; display: flex; align-items: center;
+    justify-content: space-between;
+  }
+  .result-label {
+    font-size: 11px; font-weight: 500; color: var(--primary);
+    text-transform: uppercase; letter-spacing: 0.5px;
+  }
+  .result-actions { display: flex; gap: 4px; }
+  .icon-btn {
+    background: none; border: none; cursor: pointer;
+    font-size: 15px; padding: 3px 5px; border-radius: 4px;
+    transition: background 0.2s; color: var(--muted);
+  }
+  .icon-btn:hover { background: #e5e7eb; color: var(--text); }
+
+  #result-text {
+    padding: 12px; min-height: 80px; line-height: 1.7;
+    font-size: 15px; direction: rtl; text-align: right;
+    font-family: 'Segoe UI', 'Arial Unicode MS', sans-serif;
+    color: var(--text);
+  }
+  #result-latin {
+    padding: 0 12px 12px; font-size: 12px; color: var(--muted);
+    font-style: italic; direction: ltr; text-align: left;
+    border-top: 1px dashed var(--border); margin-top: 6px; padding-top: 6px;
+  }
+  .result-empty { color: var(--muted); font-style: italic; font-size: 13px; }
+
+  /* ── History ── */
+  .history-item {
+    background: white; border-radius: var(--radius);
+    border: 1px solid var(--border); padding: 10px 12px;
+    cursor: pointer; transition: border-color 0.2s;
+  }
+  .history-item:hover { border-color: var(--primary-light); }
+  .history-src { font-size: 12px; color: var(--muted); margin-bottom: 4px; }
+  .history-tgt { font-size: 14px; direction: rtl; text-align: right; }
+  .history-empty { text-align: center; color: var(--muted); padding: 30px; font-size: 13px; }
+
+  /* ── Settings ── */
+  .settings-group {
+    background: white; border-radius: var(--radius);
+    border: 1px solid var(--border); overflow: hidden;
+  }
+  .settings-item {
+    padding: 12px; border-bottom: 1px solid var(--border);
+    display: flex; flex-direction: column; gap: 6px;
+  }
+  .settings-item:last-child { border-bottom: none; }
+  .settings-label { font-size: 12px; font-weight: 500; color: var(--text); }
+  .settings-input {
+    border: 1px solid var(--border); border-radius: 6px;
+    padding: 7px 10px; font-size: 13px; outline: none;
+    width: 100%; font-family: inherit;
+  }
+  .settings-input:focus { border-color: var(--primary-light); }
+  .save-btn {
+    background: var(--primary); color: white; border: none;
+    border-radius: 6px; padding: 8px 16px; cursor: pointer;
+    font-size: 13px; font-weight: 500; margin-top: 4px;
+  }
+
+  /* ── Loading / Error ── */
+  .loader { display: none; text-align: center; padding: 16px; color: var(--muted); }
+  .loader.show { display: block; }
+  .error-msg {
+    background: #fef2f2; border: 1px solid #fecaca;
+    color: var(--danger); border-radius: 6px; padding: 8px 12px;
+    font-size: 12px; display: none;
+  }
+  .error-msg.show { display: block; }
+  .spinner {
+    display: inline-block; width: 20px; height: 20px;
+    border: 2px solid #e5e7eb; border-top-color: var(--primary);
+    border-radius: 50%; animation: spin 0.7s linear infinite;
+    vertical-align: middle; margin-right: 6px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="header">
+  <span class="header-logo">🇲🇦</span>
+  <div>
+    <div class="header-title">Darija Translator</div>
+    <div class="header-sub">EN / FR / AR → Moroccan Darija</div>
+  </div>
+  <div class="header-spacer"></div>
+</div>
+
+<!-- Tabs -->
+<div class="tabs">
+  <button class="tab active" data-panel="translate">
+    <span class="tab-icon">🔤</span>Translate
+  </button>
+  <button class="tab" data-panel="speech">
+    <span class="tab-icon">🎤</span>Speech
+  </button>
+  <button class="tab" data-panel="history">
+    <span class="tab-icon">📋</span>History
+  </button>
+  <button class="tab" data-panel="settings">
+    <span class="tab-icon">⚙️</span>Settings
+  </button>
+</div>
+
+<!-- Main content -->
+<div class="content">
+
+  <!-- ── TRANSLATE PANEL ── -->
+  <div class="panel active" id="panel-translate">
+    <div class="source-bar">
+      <select class="lang-select" id="source-lang">
+        <option value="en">🇬🇧 English</option>
+        <option value="fr">🇫🇷 French</option>
+        <option value="ar">🇸🇦 Arabic (MSA)</option>
+        <option value="es">🇪🇸 Spanish</option>
+      </select>
+      <span class="source-bar-spacer"></span>
+      <span style="font-size:11px;color:var(--muted)">→ 🇲🇦 Darija</span>
+    </div>
+
+    <textarea id="source-text" placeholder="Type or paste text here… selected text will appear automatically"></textarea>
+    <div class="char-count"><span id="char-count">0</span> / 500</div>
+
+    <button class="translate-btn" id="translate-btn">
+      <span id="btn-label">Translate</span>
+    </button>
+
+    <div class="error-msg" id="error-msg"></div>
+    <div class="loader" id="loader"><span class="spinner"></span>Translating…</div>
+
+    <div class="result-card">
+      <div class="result-header">
+        <span class="result-label">🇲🇦 Moroccan Darija</span>
+        <div class="result-actions">
+          <button class="icon-btn" id="copy-btn" title="Copy">📋</button>
+          <button class="icon-btn" id="speak-btn" title="Read aloud">🔊</button>
+        </div>
+      </div>
+      <div id="result-text" class="result-empty">Translation will appear here</div>
+      <div id="result-latin"></div>
+    </div>
+  </div>
+
+  <!-- ── SPEECH PANEL ── -->
+  <div class="panel" id="panel-speech">
+    <div style="text-align:center;padding:20px 10px;">
+      <div style="font-size:48px;margin-bottom:12px;">🎤</div>
+      <p style="color:var(--muted);font-size:13px;margin-bottom:16px;">
+        Speak in English or French. Your speech will be translated to Darija and read aloud.
+      </p>
+      <button class="translate-btn" id="record-btn" style="max-width:200px;margin:0 auto;">
+        🎙️ Start Speaking
+      </button>
+      <div id="transcript" style="margin-top:16px;font-size:13px;color:var(--muted);min-height:30px;"></div>
+    </div>
+
+    <div class="result-card" id="speech-result" style="display:none">
+      <div class="result-header">
+        <span class="result-label">🇲🇦 Darija Translation</span>
+        <div class="result-actions">
+          <button class="icon-btn" id="speech-speak-btn" title="Read aloud">🔊</button>
+        </div>
+      </div>
+      <div id="speech-result-text" style="padding:12px;direction:rtl;text-align:right;font-size:15px;"></div>
+    </div>
+  </div>
+
+  <!-- ── HISTORY PANEL ── -->
+  <div class="panel" id="panel-history">
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+      <span style="font-size:12px;color:var(--muted)">Recent translations</span>
+      <button id="clear-history" style="font-size:11px;color:var(--danger);background:none;border:none;cursor:pointer;">Clear all</button>
+    </div>
+    <div id="history-list"></div>
+  </div>
+
+  <!-- ── SETTINGS PANEL ── -->
+  <div class="panel" id="panel-settings">
+    <div class="settings-group">
+      <div class="settings-item">
+        <label class="settings-label">Server URL</label>
+        <input class="settings-input" id="s-url" type="url" placeholder="http://localhost:8080/translator/api/translator">
+      </div>
+      <div class="settings-item">
+        <label class="settings-label">Username</label>
+        <input class="settings-input" id="s-user" type="text" placeholder="api_user">
+      </div>
+      <div class="settings-item">
+        <label class="settings-label">Password</label>
+        <input class="settings-input" id="s-pass" type="password" placeholder="••••••••">
+      </div>
+    </div>
+    <button class="save-btn" id="save-settings">Save Settings</button>
+    <div id="settings-msg" style="font-size:12px;color:var(--primary);margin-top:6px;"></div>
+  </div>
+
+</div><!-- /content -->
+
+<script src="sidepanel.js"></script>
+</body>
+</html>

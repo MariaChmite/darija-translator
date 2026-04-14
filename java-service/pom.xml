@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+         http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>ma.translator</groupId>
+    <artifactId>darija-translator</artifactId>
+    <version>1.0.0</version>
+    <packaging>war</packaging>
+    <name>Darija Translator REST Service</name>
+
+    <properties>
+        <maven.compiler.source>23</maven.compiler.source>
+        <maven.compiler.target>23</maven.compiler.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <!-- Payara / GlassFish / WildFly all support Jakarta EE 10 -->
+        <jakarta.ee.version>10.0.0</jakarta.ee.version>
+    </properties>
+
+    <dependencies>
+        <!-- Jakarta EE 10 full platform — provided by app server at runtime -->
+        <dependency>
+            <groupId>jakarta.platform</groupId>
+            <artifactId>jakarta.jakartaee-api</artifactId>
+            <version>${jakarta.ee.version}</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <!-- Testing -->
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <version>5.10.0</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <finalName>darija-translator</finalName>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-war-plugin</artifactId>
+                <version>3.4.0</version>
+                <configuration>
+                    <!-- No web.xml required — annotations only -->
+                    <failOnMissingWebXml>false</failOnMissingWebXml>
+                </configuration>
+            </plugin>
+
+            <!--
+                Option A: Deploy to embedded Payara Micro (recommended for dev)
+                Run: mvn package payara-micro:start
+            -->
+            <plugin>
+                <groupId>fish.payara.maven.plugins</groupId>
+                <artifactId>payara-micro-maven-plugin</artifactId>
+                <version>2.3</version>
+                <configuration>
+                    <payaraVersion>6.2024.6</payaraVersion>
+                    <deployWar>true</deployWar>
+                    <contextRoot>/translator</contextRoot>
+                    <javaCommandLineOptions>
+                        <!-- Pass your Gemini API key here -->
+                        <option>
+                            <value>-DGEMINI_API_KEY=${env.GEMINI_API_KEY}</value>
+                        </option>
+                    </javaCommandLineOptions>
+                </configuration>
+            </plugin>
+
+            <!--
+                Option B: Deploy to WildFly
+                Run: mvn package wildfly:deploy
+            -->
+            <plugin>
+                <groupId>org.wildfly.plugins</groupId>
+                <artifactId>wildfly-maven-plugin</artifactId>
+                <version>4.2.2.Final</version>
+            </plugin>
+        </plugins>
+    </build>
+</project>

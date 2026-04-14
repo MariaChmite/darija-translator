@@ -1,0 +1,9 @@
+ma\translator\TranslatorApplication.class
+ma\translator\service\TranslationService.class
+ma\translator\security\DarijaIdentityStore.class
+ma\translator\security\DarijaIdentityStore$UserRecord.class
+ma\translator\model\TranslationRequest.class
+ma\translator\model\TranslationResponse.class
+ma\translator\resource\CorsFilter.class
+ma\translator\resource\TranslatorResource.class
+ma\translator\security\SecurityConfig.class
